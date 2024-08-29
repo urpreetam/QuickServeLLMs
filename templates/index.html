@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            background-color: #121212;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+        #graphs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        #graphs img {
+            max-width: 48%;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            #graphs img {
+                max-width: 100%;
+            }
+        }
+        .loader {
+            border: 5px solid #2a2a2a;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LLM Dashboard</h1>
+        <form id="llm-form">
+            <div class="input-group">
+                <label for="user-input">Enter your text:</label>
+                <input type="text" id="user-input" name="user-input" placeholder="Enter your input here..." required>
+            </div>
+            <div class="input-group">
+                <label for="method-select">Select method:</label>
+                <select id="method-select" name="method-select">
+                    <option value="normal">Normal</option>
+                    <option value="caching">Caching</option>
+                    <option value="batching">Batching</option>
+                    <option value="comparison">Compare All</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="parameter-select">Select No of Tokens:</label>
+                <select id="parameter-select" name="parameter-select">
+                    <option value="32">8</option>
+                    <option value="64">16</option>
+                    <option value="128">32</option>
+                </select>
+            </div>
+            <button type="submit">Generate</button>
+        </form>
+    </div>
+    <div id="result">
+        <h2>Results</h2>
+        <div id="loader" class="loader"></div>
+        <div id="text-output"></div>
+        <div id="graphs"></div>
+    </div>
+
+    <script>
+        document.getElementById('llm-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Show loading animation
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('text-output').innerHTML = '';
+            document.getElementById('graphs').innerHTML = '';
+            
+            // Send form data to the backend and update the results
+            const formData = new FormData(this);
+            fetch('/generate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading animation
+                document.getElementById('loader').style.display = 'none';
+                
+                // Update the graphs div with the received graph
+                if (data.graph) {
+                    document.getElementById('graphs').innerHTML = `<img src="data:image/png;base64,${data.graph}" alt="Generation Time Graph">`;
+                } else {
+                    document.getElementById('graphs').innerHTML = '<p>No graph data available</p>';
+                }
+                
+                // Update the text output div with the generated text
+                document.getElementById('text-output').innerHTML = `<p>Response from the model: ${data.output}</p>`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Hide loading animation
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('graphs').innerHTML = '<p>Error loading graphs</p>';
+                document.getElementById('text-output').innerHTML = '<p>Error generating text</p>';
+            });
+        });
+    </script>
+</body>
+</html>

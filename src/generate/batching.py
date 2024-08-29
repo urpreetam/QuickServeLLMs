@@ -1,4 +1,4 @@
-from logger import logging
+# from logger import logging
 import time
 import torch
 from simple_model import SimpleModel
@@ -19,3 +19,4 @@ class Batching(SimpleModel):
     def promptConfig(self, prompts):
         inputs = self.tokenizer(prompts, padding = True, return_tensors = "pt")
         #TODO: Complete this function
+        
