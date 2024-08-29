@@ -1,8 +1,6 @@
 import time
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import sys
-sys.path.append('..')
 from src.generate.simple_model import SimpleModel
 
 class ModelWithKVCache(SimpleModel):
